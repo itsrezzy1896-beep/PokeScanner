@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokemon Card Scanner PRO</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+<style>
+body{
+font-family:Arial;
+background:#f2f2f2;
+padding:20px;
+text-align:center;
+}
+button{
+padding:12px 20px;
+font-size:16px;
+margin:10px;
+}
+#preview{
+max-width:95%;
+margin-top:15px;
+}
+#cards{
+margin-top:20px;
+background:white;
+padding:10px;
+border-radius:8px;
+text-align:left;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Pokemon Card Scanner PRO</h1>
+<p>Scan up to ~50 cards per photo (DE / EN / JP)</p>
+
+<input type="file" accept="image/*" capture="environment" id="camera">
+<br>
+<img id="preview">
+
+<div id="cards"></div>
+
+<button onclick="exportCSV()">Export Cardmarket CSV</button>
+
+<script src="scanner.js"></script>
+
+</body>
+</html>

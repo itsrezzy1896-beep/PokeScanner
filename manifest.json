@@ -1,0 +1,8 @@
+{
+  "name": "Pokemon Card Scanner PRO",
+  "short_name": "CardScanner",
+  "display": "standalone",
+  "start_url": ".",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
