@@ -1,4 +1,3 @@
-
 let cards = []
 
 const input = document.getElementById("camera")
@@ -10,72 +9,94 @@ input.addEventListener("change", async function(e){
 const file = e.target.files[0]
 preview.src = URL.createObjectURL(file)
 
-// Step 1 OCR recognition (demo)
+cardsDiv.innerHTML = "Scanning image..."
+
 const worker = await Tesseract.createWorker()
-await worker.loadLanguage('eng')
-await worker.initialize('eng')
+
+await worker.loadLanguage("eng+jpn")
+await worker.initialize("eng")
 
 const { data } = await worker.recognize(file)
 
 await worker.terminate()
 
-// crude card name detection example
-let detectedName = detectName(data.text)
+const text = data.text.toLowerCase()
 
-if(!detectedName){
-detectedName = "Unknown Card"
+const detectedNames = detectPokemonNames(text)
+
+if(detectedNames.length === 0){
+
+cardsDiv.innerHTML = "No Pokemon detected"
+
+return
+
 }
 
-// Step 2 lookup card from API
-let card = await lookupCard(detectedName)
+for(let name of detectedNames){
+
+let card = await lookupCard(name)
 
 cards.push(card)
+
+}
 
 renderCards()
 
 })
 
-function detectName(text){
+function detectPokemonNames(text){
 
-text = text.toLowerCase()
-
-const names = [
-"pikachu","charizard","dragapult","mew","mewtwo","gardevoir",
-"blastoise","venusaur","lucario","rayquaza"
+const pokemon = [
+"pikachu","charizard","mew","mewtwo","gardevoir","rayquaza",
+"dragapult","ursaluna","aerodactyl","iron thorns","scream tail",
+"lucario","blastoise","venusaur","gyarados","alakazam",
+"machamp","snorlax","gengar","tyranitar"
 ]
 
-for(let n of names){
-if(text.includes(n)){
-return n
-}
+let found = []
+
+for(let p of pokemon){
+
+if(text.includes(p)){
+
+found.push(p)
+
 }
 
-return null
+}
+
+return found
+
 }
 
 async function lookupCard(name){
 
 try{
 
-const r = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${name}`)
-const d = await r.json()
+const response = await fetch(`https://api.pokemontcg.io/v2/cards?q=name:${name}`)
 
-const c = d.data[0]
+const data = await response.json()
+
+const c = data.data[0]
 
 return {
+
 cardmarketId:"",
 name:c.name,
 set:c.set.name,
 number:c.number
+
 }
 
 }catch{
 
-return {
+return{
+
 cardmarketId:"",
 name:name,
 set:"Unknown",
 number:""
+
 }
 
 }
@@ -84,16 +105,18 @@ number:""
 
 function renderCards(){
 
-cardsDiv.innerHTML="<h3>Detected Cards</h3>"
+cardsDiv.innerHTML = "<h3>Detected Cards</h3>"
 
 cards.forEach((c,i)=>{
 
-const row=document.createElement("div")
+const row = document.createElement("div")
 
-row.innerText=
-(i+1)+". "+
-c.name+" | "+
-c.set+" | "+
+row.innerText =
+(i+1) + ". " +
+c.name +
+" | " +
+c.set +
+" | " +
 c.number
 
 cardsDiv.appendChild(row)
@@ -104,20 +127,23 @@ cardsDiv.appendChild(row)
 
 function exportCSV(){
 
-let csv=`cardmarketId,quantity,name,set,cn,condition,language,isFirstEd,isReverseHolo,isSigned,price,comment\n`
+let csv =
+`cardmarketId,quantity,name,set,cn,condition,language,isFirstEd,isReverseHolo,isSigned,price,comment\n`
 
 cards.forEach(c=>{
 
-csv+=`${c.cardmarketId},1,${c.name},${c.set},${c.number},NM,English,,false,,,
-`
+csv += `${c.cardmarketId},1,${c.name},${c.set},${c.number},NM,English,,false,,,\n`
 
 })
 
-const blob=new Blob([csv],{type:"text/csv"})
-const link=document.createElement("a")
+const blob = new Blob([csv])
 
-link.href=URL.createObjectURL(blob)
-link.download="cardmarket_import.csv"
+const link = document.createElement("a")
+
+link.href = URL.createObjectURL(blob)
+
+link.download = "cardmarket_import.csv"
+
 link.click()
 
 }
